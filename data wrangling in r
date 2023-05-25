@@ -1,0 +1,91 @@
+#Data taken from Seattle Public Library - filtered by year(2019,2020,2021,2022), MaterialType including only
+# physical books, audiobooks and ebooks, adult fiction only, only books with more than 1 checkout, english books only,
+
+#Load data from SPL
+
+spl2019 <- read.csv("SPL2019.csv")
+spl2020 <- read.csv("SPL2020.csv")
+spl2021 <- read.csv("SPL2021.csv")
+spl2022 <- read.csv("SPL2022.csv")
+
+#create dataframe with all years
+
+spl <- spl2019 %>% bind_rows(spl2020, spl2021, spl2022)
+
+#remove rows breaking spread() below
+
+spl <- spl[-c(1215171, 1215172, 1215176, 1215177, 1215178, 1215179, 1147311, 1147312, 1215180, 1215181), ]
+
+#make a column for each month with number of checkouts as data, filling empty months with 0
+
+spread_spl <- spl %>% spread(key = CheckoutMonth, value = Checkouts, fill = 0)
+
+#changing column names
+spread_spl <- spread_spl %>% rename("Jan" = "1",
+                                  "Feb" = "2",
+                                  "Mar" = "3",
+                                  "Apr" = "4",
+                                  "May" = "5",
+                                  "Jun" = "6",
+                                  "Jul" = "7",
+                                  "Aug" = "8",
+                                  "Sep" = "9",
+                                  "Oct" = "10",
+                                  "Nov" = "11",
+                                  "Dec" = "12")
+#change column class
+spread_spl <- spread_spl %>% mutate(Jan = as.integer(Jan),
+                                  Feb = as.integer(Feb),
+                                  Mar = as.integer(Mar),
+                                  Apr = as.integer(Apr),
+                                  May = as.integer(May),
+                                  Jun = as.integer(Jun),
+                                  Jul = as.integer(Jul),
+                                  Aug = as.integer(Aug),
+                                  Sep = as.integer(Sep),
+                                  Oct = as.integer(Oct),
+                                  Nov = as.integer(Nov),
+                                  Dec = as.integer(Dec),)
+
+#remove irrelevant columns from each: ISBN, CheckoutType, UsageClass, Publisher, PublicationYear - no longer need ID
+
+fltd_spl <- spread_spl %>% select(-c(ISBN, CheckoutType, UsageClass, Publisher, PublicationYear))
+
+#create totalcheckouts column
+
+ckout_spl <- fltd_spl %>% 
+  mutate(TotalCheckouts = rowSums(spread_spl[ , c("Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")]))
+
+
+#remove fiction string from Subjects column because all books are fiction
+
+clean_spl <- ckout_spl %>% mutate_at("Subjects", str_replace, "Fiction, ", "")
+
+#categorize genres- change column name
+
+colnames(clean_spl)[5] <- "Genre"
+
+#create function to search for keywords
+#categorize to one genre for each entry
+
+clean_spl$Genre <- tolower(clean_spl$Genre)
+
+prioritized_genres <- c('romance', 'horror', 'historical', 'mystery', 'fantasy', 'science fiction', 'classic', 'thriller', 'literature')
+
+for(index in 1:nrow(clean_spl)) {
+  genre <- clean_spl[index,5]
+  for (priority_genre in prioritized_genres) {
+    # grep for priority_genre in genre
+    found = regexpr(paste(".*", priority_genre, ".*", sep = ""), genre)
+    if (found > -1) {
+      # we got a match, so update Genre for this row,column in the data set
+      clean_spl$Genre[index] <- priority_genre
+      break
+    }
+    # not found: continue to next priority_genre
+  }
+}
+
+#save dataframe
+
+write.csv(clean_spl, file = "finalspl.csv")

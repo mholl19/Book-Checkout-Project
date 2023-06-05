@@ -72,6 +72,11 @@ fltd_spl <- fltd_spl %>% mutate(Jan = as.integer(Jan),
                                     Nov = as.integer(Nov),
                                     Dec = as.integer(Dec),)
 
+#create totalcheckouts column
+
+fltd_spl <- fltd_spl %>% 
+  mutate(TotalCheckouts = rowSums(fltd_spl[ , c("Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")]))
+
 #remove fiction string from Subjects column because all books are fiction
 
 clean_spl <- fltd_spl %>% mutate_at("Subjects", str_replace, "Fiction, ", "")

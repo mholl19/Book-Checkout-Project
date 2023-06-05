@@ -45,37 +45,10 @@ spl <- spread_2018 %>% bind_rows(spread_2019, spread_2020, spread_2021, spread_2
 
 fltd_spl <- spl %>% select(-c(ISBN, CheckoutType, UsageClass, Publisher, PublicationYear))
 
-#changing column names
-fltd_spl <- fltd_spl %>% rename("Jan" = "1",
-                                "Feb" = "2",
-                                "Mar" = "3",
-                                "Apr" = "4",
-                                "May" = "5",
-                                "Jun" = "6",
-                                "Jul" = "7",
-                                "Aug" = "8",
-                                "Sep" = "9",
-                                "Oct" = "10",
-                                "Nov" = "11",
-                                "Dec" = "12")
-#change column class
-fltd_spl <- fltd_spl %>% mutate(Jan = as.integer(Jan),
-                                    Feb = as.integer(Feb),
-                                    Mar = as.integer(Mar),
-                                    Apr = as.integer(Apr),
-                                    May = as.integer(May),
-                                    Jun = as.integer(Jun),
-                                    Jul = as.integer(Jul),
-                                    Aug = as.integer(Aug),
-                                    Sep = as.integer(Sep),
-                                    Oct = as.integer(Oct),
-                                    Nov = as.integer(Nov),
-                                    Dec = as.integer(Dec),)
-
 #create totalcheckouts column
 
 fltd_spl <- fltd_spl %>% 
-  mutate(TotalCheckouts = rowSums(fltd_spl[ , c("Jan", "Feb", "Mar", "Apr", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")]))
+  mutate(TotalCheckouts = rowSums(fltd_spl[ , c('1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12')]))
 
 #remove fiction string from Subjects column because all books are fiction
 

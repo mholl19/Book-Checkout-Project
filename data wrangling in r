@@ -62,6 +62,7 @@ colnames(clean_spl)[5] <- "Genre"
 #categorize to one genre for each entry
 
 clean_spl$Genre <- tolower(clean_spl$Genre)
+clean_spl$MaterialType <- tolower(clean_spl$MaterialType)
 
 #sample data to test genre search
 test <- test2 <- clean_spl[sample(nrow(clean_spl), 50), ]
